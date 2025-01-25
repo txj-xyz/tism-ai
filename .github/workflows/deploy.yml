@@ -38,7 +38,7 @@ jobs:
         uses: denoland/deployctl@v1
         with:
           project: "txj-xyz-tism-ai-45"
-          entrypoint: "main.ts"
+          entrypoint: "chat.ts"
           root: "."
-          include: chat.ts,local.yaml
+          
           
