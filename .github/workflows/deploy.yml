@@ -37,10 +37,18 @@ jobs:
       - name: Compile step
         run: deno compile --allow-read --allow-net -o build/ ./chat.ts
       
-      - name: Version Timestamp
+      - name: Version Timestamp (Linux/macOS)
+        if: matrix.os != 'windows-latest'
         id: get_version
         run: |
           echo "version=stable-$(date +%s)" >> $GITHUB_ENV
+
+      - name: Version Timestamp (Windows)
+        if: matrix.os == 'windows-latest'
+        id: get_version
+        run: |
+          echo "version=stable-$((Get-Date).Ticks)" >> $env:GITHUB_ENV
+        shell: pwsh
 
       - name: Artifact Build step
         uses: actions/upload-artifact@v4
