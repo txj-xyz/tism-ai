@@ -66,8 +66,17 @@ jobs:
           cd build && mv chat.exe tism-ai-${{ env.version }}-${{ matrix.os }}.exe
         shell: pwsh
 
-      - name: Upload Artifact to Release Tag
+      - name: Upload Artifact to Release Tag (Windows)
+        if: matrix.os == 'windows-latest'
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            tism-ai-${{ env.version }}-${{ matrix.os }}.zip
+            build/tism-ai-${{ env.version }}-${{ matrix.os }}.exe
+      
+      - name: Upload Artifact to Release Tag (Linux + MacOS)
+        if: matrix.os != 'windows-latest'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/tism-ai-${{ env.version }}-${{ matrix.os }}
+      
