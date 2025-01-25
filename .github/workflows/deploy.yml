@@ -8,7 +8,10 @@ on:
 jobs:
   deploy:
     name: Deploy
-    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     permissions:
       id-token: write # Needed for auth with Deno Deploy
@@ -27,26 +30,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-
+      
       - name: Install step
-        run: "deno i"
+        run: deno i
 
       - name: Compile step
-        run: "deno compile --allow-read --allow-net -o build/ ./chat.ts"
-
+        run: deno compile --allow-read --allow-net -o build/ ./chat.ts
+      
       - name: Version Timestamp
         id: get_version
         run: |
           echo "version=stable-$(date +%s)" >> $GITHUB_ENV
 
-      - name: Artefact Build step
+      - name: Artifact Build step
         uses: actions/upload-artifact@v4
         with:
-          name: tism-ai-${{ env.version }}
+          name: tism-ai-${{ env.version }}-${{ matrix.os }}
           path: build
       
       - name: Create ZIP Artifact Release
+        if: matrix.os != 'windows-latest'
         run: |
-          cd build && zip -r ../tism-ai-${{ env.version }}.zip .
-          
-          
+          cd build && zip -r ../tism-ai-${{ env.version }}-${{ matrix.os }}.zip .
+      
+      - name: Create ZIP Artifact Release (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd build && Compress-Archive -Path * -DestinationPath ..\tism-ai-${{ env.version }}-${{ matrix.os }}.zip
+        shell: pwsh
