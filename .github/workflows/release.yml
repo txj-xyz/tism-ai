@@ -6,8 +6,11 @@ on:
       - '*'
 jobs:
   deploy:
-    name: Build Artefact
-    runs-on: ubuntu-24.04
+    name: Deploy
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     permissions:
       id-token: write # Needed for auth with Deno Deploy
@@ -26,9 +29,45 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-
+      
       - name: Install step
-        run: "deno i"
+        run: deno i
 
-      - name: Build step
-        run: "deno compile --allow-read --allow-net ./chat.ts"
+      - name: Compile step
+        run: deno compile --allow-read --allow-net -o build/ ./chat.ts
+      
+      - name: Version Timestamp (Linux and macOS)
+        if: matrix.os != 'windows-latest'
+        id: get_version_unix
+        run: |
+          echo "version=stable-$(date +%s)" >> $GITHUB_ENV
+
+      - name: Version Timestamp (Windows)
+        if: matrix.os == 'windows-latest'
+        id: get_version_win
+        run: |
+          echo "version=stable-$((Get-Date).Ticks)" >> $env:GITHUB_ENV
+        shell: pwsh
+
+      - name: Artifact Build step
+        uses: actions/upload-artifact@v4
+        with:
+          name: tism-ai-${{ env.version }}-${{ matrix.os }}
+          path: build
+      
+      - name: Create ZIP Artifact Release (Linux and macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd build && zip -r ../tism-ai-${{ env.version }}-${{ matrix.os }}.zip .
+      
+      - name: Create ZIP Artifact Release (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd build && Compress-Archive -Path * -DestinationPath ..\tism-ai-${{ env.version }}-${{ matrix.os }}.zip
+        shell: pwsh
+
+      - name: Create Github Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            tism-ai-${{ env.version }}-${{ matrix.os }}.zip
