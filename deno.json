@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "start": "deno run chat.ts",
+    "release": "deno compile --allow-net --allow-read -o build/ chat.ts && cp local.yaml build/local.yaml"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
