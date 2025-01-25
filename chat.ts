@@ -31,7 +31,7 @@ do {
 
   let r: string = '';
   for await (const part of chatResponse) {
-    Deno.stdout.write(new TextEncoder().encode(part.message.content));
+    Deno.stdout.write(new TextEncoder().encode(`\x1b[31m${part.message.content}\x1b[0m`));
     r += part.message.content;
   }
 
