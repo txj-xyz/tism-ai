@@ -1,0 +1,8 @@
+# Config file to determine where the OLLAMA instance is running
+ollama:
+  # api endpoint exposed
+  endpoint: "http://192.168.1.206:11434"
+  # model you're running  
+  model: "llama3.2:1b"
+  # number of threads to use when running the prompt generation
+  threads: 16
