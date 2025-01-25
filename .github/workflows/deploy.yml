@@ -1,4 +1,4 @@
-name: Deploy
+name: Build artifact Only
 on:
   push:
     branches: master
@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy
+    name: Create binary for multiplatform
     strategy:
       matrix:
         os: [ubuntu-24.04, macos-latest, windows-latest]
