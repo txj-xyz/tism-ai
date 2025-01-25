@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     name: Deploy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     permissions:
       id-token: write # Needed for auth with Deno Deploy
@@ -31,7 +31,22 @@ jobs:
       - name: Install step
         run: "deno i"
 
-      - name: Build step
-        run: "deno compile --allow-read --allow-net ./chat.ts"
+      - name: Compile step
+        run: "deno compile --allow-read --allow-net -o build/ ./chat.ts"
+
+      - name: Version Timestamp
+        id: get_version
+        run: |
+          echo "$(date +%s)" >> $GITHUB_ENV
+
+      - name: Artefact Build step
+        uses: actions/upload-artifact@v4
+        with:
+          name: tism-ai-${{ env.version }}
+          path: build
+      
+      - name: Create ZIP Artifact Release
+        run: |
+          cd build && zip -r ../tism-ai-${{ env.version }}.zip .
           
           
