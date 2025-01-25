@@ -1,4 +1,4 @@
-name: Release Production Tag Build 
+name: Create Production Release
 
 on:
   push:
@@ -13,14 +13,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     permissions:
-      id-token: write # Needed for auth with Deno Deploy
-      contents: write # Needed to clone the repository
+      id-token: write
+      contents: write
 
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
 
-      - name: Install Deno
+      - name: Install Deno2
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
@@ -30,43 +30,43 @@ jobs:
         with:
           node-version: lts/*
       
-      - name: Install step
+      - name: Install
         run: deno i
 
-      - name: Compile step
+      - name: Compile
         run: deno compile --allow-read --allow-net -o build/ ./chat.ts
       
-      - name: Version Timestamp (Linux and macOS)
+      - name: Version (Linux and macOS)
         if: matrix.os != 'windows-latest'
         id: get_version_unix
         run: |
           echo "version=stable-$(date +%s)" >> $GITHUB_ENV
 
-      - name: Version Timestamp (Windows)
+      - name: Version (Windows)
         if: matrix.os == 'windows-latest'
         id: get_version_win
         run: |
           echo "version=stable-$((Get-Date).Ticks)" >> $env:GITHUB_ENV
         shell: pwsh
 
-      - name: Artifact Build step
+      - name: GH Artifact Upload
         uses: actions/upload-artifact@v4
         with:
           name: tism-ai-${{ env.version }}-${{ matrix.os }}
           path: build
       
-      - name: Create ZIP Artifact Release (Linux and macOS)
+      - name: Rename files (Linux and macOS)
         if: matrix.os != 'windows-latest'
         run: |
-          cd build && zip -r ../tism-ai-${{ env.version }}-${{ matrix.os }}.zip .
+          cd build && mv -v chat tism-ai-${{ env.version }}-${{ matrix.os }}
       
-      - name: Create ZIP Artifact Release (Windows)
+      - name: Rename files (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          cd build && Compress-Archive -Path * -DestinationPath ..\tism-ai-${{ env.version }}-${{ matrix.os }}.zip
+          cd build && chat.exe tism-ai-${{ env.version }}-${{ matrix.os }}.exe
         shell: pwsh
 
-      - name: Create Github Release
+      - name: Upload Artifact to Release Tag
         uses: softprops/action-gh-release@v2
         with:
           files: |
