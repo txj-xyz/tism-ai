@@ -37,15 +37,15 @@ jobs:
       - name: Compile step
         run: deno compile --allow-read --allow-net -o build/ ./chat.ts
       
-      - name: Version Timestamp (Linux/macOS)
+      - name: Version Timestamp (Linux and macOS)
         if: matrix.os != 'windows-latest'
-        id: get_version
+        id: get_version_unix
         run: |
           echo "version=stable-$(date +%s)" >> $GITHUB_ENV
 
       - name: Version Timestamp (Windows)
         if: matrix.os == 'windows-latest'
-        id: get_version
+        id: get_version_win
         run: |
           echo "version=stable-$((Get-Date).Ticks)" >> $env:GITHUB_ENV
         shell: pwsh
@@ -56,7 +56,7 @@ jobs:
           name: tism-ai-${{ env.version }}-${{ matrix.os }}
           path: build
       
-      - name: Create ZIP Artifact Release
+      - name: Create ZIP Artifact Release (Linux and macOS)
         if: matrix.os != 'windows-latest'
         run: |
           cd build && zip -r ../tism-ai-${{ env.version }}-${{ matrix.os }}.zip .
